@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#17110d" />
+<title>舒腹十分钟 · Belly Ease</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ground:#17110d;
+    --ground2:#211913;
+    --panel:#2a201a;
+    --sand:#ece0d2;
+    --sand-dim:#b6a795;
+    --line:rgba(236,224,210,0.12);
+    --amber:#e08a4e;
+    --amber-2:#f2ad74;
+    --serif:'Fraunces', Georgia, 'Songti SC', serif;
+    --sans:-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Segoe UI', Roboto, sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%;}
+  body{
+    background:var(--ground);
+    color:var(--sand);
+    font-family:var(--sans);
+    overscroll-behavior:none;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    position:fixed; inset:0;
+    height:100dvh;
+    display:flex; flex-direction:column;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .screen{flex:1; display:none; flex-direction:column; min-height:0;}
+  .screen.active{display:flex;}
+
+  /* ---------- buttons & toggles ---------- */
+  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  button:focus-visible{outline:2px solid var(--amber-2); outline-offset:3px; border-radius:8px;}
+  .btn-primary{
+    background:var(--amber); color:#1b120a; font-weight:500; font-size:17px;
+    letter-spacing:.04em; padding:17px 24px; border-radius:999px; width:100%;
+    transition:transform .15s ease, background .2s ease;
+  }
+  .btn-primary:active{transform:scale(.98); background:var(--amber-2);}
+  .btn-ghost{
+    border:1px solid var(--line); color:var(--sand-dim);
+    padding:13px 18px; border-radius:999px; font-size:14px; letter-spacing:.03em;
+  }
+  .btn-ghost:active{background:rgba(236,224,210,.05);}
+
+  .lang-switch{
+    position:absolute; top:14px; right:14px; z-index:10;
+    display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden;
+    font-size:12px; letter-spacing:.06em;
+  }
+  .lang-switch button{padding:7px 13px; color:var(--sand-dim);}
+  .lang-switch button.on{background:var(--amber); color:#1b120a;}
+
+  /* ---------- welcome ---------- */
+  .welcome{overflow-y:auto; padding:64px 26px 30px;}
+  .eyebrow{font-size:12px; letter-spacing:.34em; text-transform:uppercase; color:var(--amber); margin-bottom:18px;}
+  .welcome h1{
+    font-family:var(--serif); font-weight:300; font-size:clamp(34px,11vw,46px);
+    line-height:1.08; margin:0 0 14px; letter-spacing:-.01em;
+  }
+  .welcome h1 em{font-style:italic; color:var(--amber-2);}
+  .lede{color:var(--sand-dim); font-size:15.5px; line-height:1.65; max-width:30em; margin:0 0 26px;}
+  .meta-row{display:flex; gap:22px; margin:0 0 30px; flex-wrap:wrap;}
+  .meta{display:flex; flex-direction:column; gap:3px;}
+  .meta .n{font-family:var(--serif); font-size:26px; color:var(--sand);}
+  .meta .l{font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--sand-dim);}
+
+  .safety{
+    border:1px solid var(--line); border-radius:16px; padding:18px 18px 6px;
+    margin-bottom:26px; background:linear-gradient(180deg, rgba(224,138,78,.05), transparent);
+  }
+  .safety h3{font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--amber); margin:0 0 12px;}
+  .safety p{font-size:13.5px; line-height:1.6; color:var(--sand-dim); margin:0 0 12px;}
+  .safety strong{color:var(--sand); font-weight:500;}
+
+  .options{display:flex; flex-direction:column; gap:2px; margin-bottom:28px;}
+  .opt{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:15px 4px; border-bottom:1px solid var(--line);
+  }
+  .opt:last-child{border-bottom:none;}
+  .opt .t{font-size:15px;}
+  .opt .d{font-size:12px; color:var(--sand-dim); margin-top:3px;}
+  .toggle{
+    width:50px; height:29px; border-radius:999px; background:rgba(236,224,210,.14);
+    position:relative; transition:background .22s ease; flex:none;
+  }
+  .toggle::after{
+    content:""; position:absolute; top:3px; left:3px; width:23px; height:23px;
+    border-radius:50%; background:var(--sand); transition:transform .22s ease;
+  }
+  .toggle.on{background:var(--amber);}
+  .toggle.on::after{transform:translateX(21px);}
+
+  /* ---------- practice ---------- */
+  .practice{position:relative; align-items:center; justify-content:space-between; padding:18px 22px 26px;}
+  .topbar{width:100%; display:flex; flex-direction:column; gap:14px; z-index:5;}
+  .progress-track{height:3px; width:100%; background:rgba(236,224,210,.1); border-radius:2px; overflow:hidden;}
+  .progress-fill{height:100%; width:0%; background:var(--amber); border-radius:2px; transition:width .25s linear;}
+  .phase-row{display:flex; align-items:baseline; justify-content:space-between;}
+  .phase-name{font-family:var(--serif); font-size:20px; font-weight:400; letter-spacing:.01em;}
+  .phase-idx{font-size:12px; color:var(--sand-dim); letter-spacing:.1em;}
+  .clock{font-variant-numeric:tabular-nums; font-size:13px; color:var(--sand-dim); letter-spacing:.08em;}
+
+  .orb-wrap{
+    flex:1; width:100%; display:flex; align-items:center; justify-content:center;
+    position:relative; min-height:0;
+  }
+  .orb-stage{position:relative; width:min(74vw,320px); aspect-ratio:1; display:flex; align-items:center; justify-content:center;}
+  .glow{
+    position:absolute; inset:-22%; border-radius:50%;
+    background:radial-gradient(circle, rgba(224,138,78,.42), rgba(224,138,78,.06) 55%, transparent 72%);
+    filter:blur(14px); opacity:.6; transform:scale(.6);
+    transition:transform .12s linear, opacity .3s ease;
+  }
+  .ring{position:absolute; inset:0; transform:rotate(-90deg);}
+  .ring circle{fill:none; stroke-linecap:round;}
+  .ring .bg{stroke:rgba(236,224,210,.1); stroke-width:2;}
+  .ring .fg{stroke:var(--amber-2); stroke-width:2.5; transition:stroke-dashoffset .12s linear;}
+  .orb{
+    position:relative; width:62%; aspect-ratio:1; border-radius:50%;
+    background:radial-gradient(circle at 38% 34%, var(--amber-2), var(--amber) 52%, #b96b35 100%);
+    box-shadow:0 0 50px rgba(224,138,78,.35), inset 0 0 40px rgba(255,210,160,.25);
+    transform:scale(.6);
+    transition:transform .12s linear;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+  }
+  .orb .breath-label{font-size:16px; letter-spacing:.32em; color:#2a1a0e; font-weight:500; text-indent:.32em; opacity:.92;}
+  .orb .breath-count{font-family:var(--serif); font-size:46px; line-height:1; color:#241509; margin-top:4px; font-variant-numeric:tabular-nums;}
+
+  .cue{width:100%; text-align:center; min-height:88px; z-index:5; display:flex; flex-direction:column; gap:10px; justify-content:flex-start;}
+  .cue .instr{font-size:16px; line-height:1.55; color:var(--sand); max-width:24em; margin:0 auto; transition:opacity .4s ease;}
+  .scent{
+    display:inline-flex; align-items:center; gap:7px; align-self:center;
+    font-size:12.5px; color:var(--amber-2); letter-spacing:.04em;
+    border:1px solid rgba(224,138,78,.3); border-radius:999px; padding:6px 13px;
+    background:rgba(224,138,78,.06); opacity:0; transform:translateY(4px);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .scent.show{opacity:1; transform:none;}
+
+  .controls{display:flex; align-items:center; justify-content:center; gap:14px; width:100%; z-index:5;}
+  .ctrl{
+    width:50px; height:50px; border-radius:50%; border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; color:var(--sand-dim);
+  }
+  .ctrl.on{color:var(--amber-2); border-color:rgba(224,138,78,.4);}
+  .ctrl svg{width:20px; height:20px;}
+  .ctrl-play{width:74px; height:74px; background:var(--amber); border:none;}
+  .ctrl-play svg{width:28px; height:28px; color:#1b120a;}
+
+  /* ---------- done ---------- */
+  .done{overflow-y:auto; padding:60px 26px 34px; justify-content:center;}
+  .done .mark{width:54px; height:54px; border-radius:50%; border:1px solid rgba(224,138,78,.5); display:flex; align-items:center; justify-content:center; margin-bottom:24px;}
+  .done .mark svg{width:24px; height:24px; color:var(--amber-2);}
+  .done h2{font-family:var(--serif); font-weight:300; font-size:32px; margin:0 0 16px; line-height:1.15;}
+  .done p{color:var(--sand-dim); font-size:15px; line-height:1.65; margin:0 0 14px; max-width:28em;}
+  .reflect{border-left:2px solid var(--amber); padding:4px 0 4px 16px; margin:8px 0 26px;}
+  .reflect li{font-size:14.5px; color:var(--sand); line-height:1.6; list-style:none; margin-bottom:10px;}
+  .done .btn-primary{margin-bottom:12px;}
+
+  .hide{display:none !important;}
+
+  @media (prefers-reduced-motion: reduce){
+    .glow{transition:none;}
+    .orb{transition:transform .25s ease;}
+  }
+  @media (min-height:740px){
+    .orb .breath-count{font-size:52px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- language -->
+  <div class="lang-switch" role="group" aria-label="Language">
+    <button id="lang-zh" class="on" data-lang="zh">中</button>
+    <button id="lang-en" data-lang="en">EN</button>
+  </div>
+
+  <!-- ===================== WELCOME ===================== -->
+  <section class="screen welcome active" id="screen-welcome">
+    <div class="eyebrow" data-i="eyebrow"></div>
+    <h1 data-i="title"></h1>
+    <p class="lede" data-i="lede"></p>
+
+    <div class="meta-row">
+      <div class="meta"><span class="n">10</span><span class="l" data-i="m_min"></span></div>
+      <div class="meta"><span class="n">5</span><span class="l" data-i="m_steps"></span></div>
+      <div class="meta"><span class="n">4·6</span><span class="l" data-i="m_breath"></span></div>
+    </div>
+
+    <div class="safety">
+      <h3 data-i="safe_h"></h3>
+      <p data-i="safe_good"></p>
+      <p data-i="safe_care"></p>
+    </div>
+
+    <div class="options">
+      <div class="opt" id="opt-scent">
+        <div><div class="t" data-i="o_scent_t"></div><div class="d" data-i="o_scent_d"></div></div>
+        <div class="toggle on" role="switch" aria-checked="true" tabindex="0"></div>
+      </div>
+      <div class="opt" id="opt-sound">
+        <div><div class="t" data-i="o_sound_t"></div><div class="d" data-i="o_sound_d"></div></div>
+        <div class="toggle on" role="switch" aria-checked="true" tabindex="0"></div>
+      </div>
+      <div class="opt" id="opt-voice">
+        <div><div class="t" data-i="o_voice_t"></div><div class="d" data-i="o_voice_d"></div></div>
+        <div class="toggle" role="switch" aria-checked="false" tabindex="0"></div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btn-start" data-i="start"></button>
+    <p style="text-align:center; font-size:11.5px; color:var(--sand-dim); margin:16px 0 0; line-height:1.5;" data-i="disclaimer"></p>
+  </section>
+
+  <!-- ===================== PRACTICE ===================== -->
+  <section class="screen practice" id="screen-practice">
+    <div class="topbar">
+      <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+      <div class="phase-row">
+        <span class="phase-name" id="phase-name"></span>
+        <span class="phase-idx" id="phase-idx"></span>
+      </div>
+      <div class="clock"><span id="clock-elapsed">0:00</span> · <span id="clock-total">10:00</span></div>
+    </div>
+
+    <div class="orb-wrap">
+      <div class="orb-stage">
+        <div class="glow" id="glow"></div>
+        <svg class="ring" viewBox="0 0 100 100" id="ring">
+          <circle class="bg" cx="50" cy="50" r="48"></circle>
+          <circle class="fg" cx="50" cy="50" r="48" id="ring-fg" stroke-dasharray="301.6" stroke-dashoffset="301.6"></circle>
+        </svg>
+        <div class="orb" id="orb">
+          <div class="breath-label" id="breath-label"></div>
+          <div class="breath-count" id="breath-count"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cue">
+      <p class="instr" id="instr"></p>
+      <span class="scent" id="scent"></span>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl on" id="ctrl-sound" aria-label="sound">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>
+      </button>
+      <button class="ctrl-play" id="ctrl-play" aria-label="pause/resume">
+        <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        <svg id="icon-play" class="hide" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
+      </button>
+      <button class="ctrl" id="ctrl-exit" aria-label="exit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===================== DONE ===================== -->
+  <section class="screen done" id="screen-done">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <h2 data-i="done_h"></h2>
+    <p data-i="done_p"></p>
+    <ul class="reflect">
+      <li data-i="done_q1"></li>
+      <li data-i="done_q2"></li>
+    </ul>
+    <p data-i="done_freq"></p>
+    <button class="btn-primary" id="btn-again" data-i="done_again"></button>
+    <button class="btn-ghost" id="btn-home" style="width:100%; margin-top:10px;" data-i="done_home"></button>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   舒腹十分钟 · Belly Ease  —  single-file follow-along practice
+   编辑提示：所有文案、时长、呼吸节奏、香气提示都集中在下面两个
+   常量 (I18N / TIMELINE) 中，方便你按教学风格调整。
+   ============================================================ */
+
+const I18N = {
+  zh:{
+    eyebrow:"温和 · 腹部舒缓",
+    title:"舒腹<em>十分钟</em>",
+    lede:"以横膈膜缓慢呼吸为主线，穿插极简单、安全的仰卧动作，帮助餐后饱胀、功能性腹胀的身体慢慢松开。找一个安静的地方，平躺下来。",
+    m_min:"分钟", m_steps:"个段落", m_breath:"吸·呼节奏",
+    safe_h:"开始之前",
+    safe_good:"<strong>适合：</strong>餐后饱胀、轻度便秘、压力型腹胀。建议饭后至少 1 小时，或睡前练习。",
+    safe_care:"<strong>请谨慎：</strong>若有急性腹痛、近期腹部手术、严重心肺疾病、未控制的高血压，请先咨询医生。胃食管反流明显者，扭转放轻、上身可垫高。",
+    o_scent_t:"香气提示", o_scent_d:"在段落转换时，提示可搭配的精油",
+    o_sound_t:"呼吸提示音", o_sound_d:"吸气与呼气时的轻柔音", 
+    o_voice_t:"语音引导", o_voice_d:"朗读口令与「吸气 / 呼气」，适合闭眼跟练",
+    start:"开始练习",
+    disclaimer:"本练习用于一般身心放松，不构成医疗诊断或治疗建议。",
+    natural:"自然呼吸",
+    inhale:"吸气", exhale:"呼气", hold:"停留",
+    done_h:"练习完成",
+    done_p:"花一点时间，感受此刻的腹部。",
+    done_q1:"和刚开始相比，腹部是否有哪怕 5% 的变化？",
+    done_q2:"哪一个动作，让你觉得最舒服？记住它。",
+    done_freq:"建议每天 1–2 次、连续 4–6 周再评估效果。适应后，可把腹式呼吸延长到 8–10 分钟。",
+    done_again:"再练一次",
+    done_home:"返回首页",
+  },
+  en:{
+    eyebrow:"Gentle · Belly Relief",
+    title:"Belly Ease<br><em>in ten</em>",
+    lede:"A slow diaphragmatic breath, threaded with very simple, safe supine movements — to help a full, bloated belly gradually let go. Find a quiet spot and lie down on your back.",
+    m_min:"minutes", m_steps:"sections", m_breath:"in·out pace",
+    safe_h:"Before you begin",
+    safe_good:"<strong>Good for:</strong> post-meal fullness, mild constipation, stress bloating. Best at least 1 hour after eating, or before sleep.",
+    safe_care:"<strong>Take care:</strong> with acute abdominal pain, recent abdominal surgery, serious heart/lung conditions or uncontrolled high blood pressure, check with a doctor first. With marked reflux, keep twists soft and prop the upper body higher.",
+    o_scent_t:"Aroma cues", o_scent_d:"Suggest an essential oil at each transition",
+    o_sound_t:"Breath tones", o_sound_d:"A soft tone on the inhale and exhale",
+    o_voice_t:"Voice guidance", o_voice_d:"Reads the cues and “inhale / exhale” — good eyes-closed",
+    start:"Begin practice",
+    disclaimer:"For general relaxation only. Not medical diagnosis or treatment advice.",
+    natural:"natural breath",
+    inhale:"inhale", exhale:"exhale", hold:"hold",
+    done_h:"Practice complete",
+    done_p:"Take a moment to feel your belly right now.",
+    done_q1:"Compared with the start, has anything shifted — even 5%?",
+    done_q2:"Which movement felt best? Remember it.",
+    done_freq:"Aim for 1–2 times a day for 4–6 weeks, then reassess. Once it feels easy, extend the breathing to 8–10 minutes.",
+    done_again:"Practice again",
+    done_home:"Back to start",
+  }
+};
+
+/* Each segment: dur seconds; breath {in,hold,out} or null (free breath);
+   phase = group label; instr = on-screen cue; scent = optional aroma cue (only the
+   FIRST segment of a phase carries it). Voice reads `instr`. */
+const TIMELINE = [
+  { phase:{zh:"腹式呼吸",en:"Diaphragmatic breath"}, dur:10,  breath:null,
+    instr:{zh:"仰卧屈膝，双脚与髋同宽。一手放胸口，一手放肚脐上方，让呼吸先自然几次。",
+           en:"Lie back, knees bent, feet hip-width. One hand on the chest, one above the navel. Just breathe naturally."},
+    scent:{zh:"薄荷 / 留兰香 — 清新、安顿",en:"Peppermint / spearmint — fresh, settling"} },
+
+  { phase:{zh:"腹式呼吸",en:"Diaphragmatic breath"}, dur:60, breath:{in:3,hold:0,out:4},
+    instr:{zh:"吸气，让腹部的手轻轻隆起；呼气，腹部柔软回落。胸口那只手尽量安静。",
+           en:"Inhale — let the belly hand rise softly. Exhale — let it fall. Keep the chest hand quiet."} },
+
+  { phase:{zh:"腹式呼吸",en:"Diaphragmatic breath"}, dur:110, breath:{in:4,hold:0,out:6},
+    instr:{zh:"延长呼气：吸 4，呼 6。每一次呼气，像给胃和肠做一个温柔的按摩。",
+           en:"Lengthen the exhale: in for 4, out for 6. Each exhale gently massages the gut."} },
+
+  { phase:{zh:"抱膝排气",en:"Knee-to-chest"}, dur:70, breath:{in:4,hold:0,out:6},
+    instr:{zh:"抱右膝轻轻向胸，左脚踩地。呼气时把大腿引向腹部一点点，肩颈放松。",
+           en:"Hug the right knee toward the chest, left foot down. On each exhale draw the thigh in a little. Shoulders soft."},
+    scent:{zh:"茴香 / 甜橙 — 助消化、舒展",en:"Fennel / sweet orange — digestive, easing"} },
+
+  { phase:{zh:"抱膝排气",en:"Knee-to-chest"}, dur:70, breath:{in:4,hold:0,out:6},
+    instr:{zh:"换左膝抱向胸前。呼气引向腹部，下巴微收，不用力过猛。",
+           en:"Switch to the left knee. Draw it in on the exhale, chin slightly in — never force it."} },
+
+  { phase:{zh:"骨盆轻摇",en:"Pelvic rock"}, dur:60, breath:{in:4,hold:0,out:6},
+    instr:{zh:"双脚踩地。吸气轻送尾骨，呼气卷尾骨、下背贴垫。幅度极小，重点在呼气时轻收腹部。",
+           en:"Both feet down. Inhale, tilt the tailbone forward; exhale, curl it under, low back to the mat. Tiny range — gently draw the belly in on the exhale."},
+    scent:{zh:"姜 / 黑胡椒 — 温暖、循环",en:"Ginger / black pepper — warming, circulating"} },
+
+  { phase:{zh:"仰卧扭转",en:"Supine twist"}, dur:90, breath:{in:4,hold:0,out:6},
+    instr:{zh:"双膝并拢倒向左侧，头转向右，肩膀留在垫上。膝下可垫枕。无痛为原则。",
+           en:"Knees together, drop them to the left, turn the head right, shoulders on the mat. Prop the knees if needed. Pain-free always."} },
+
+  { phase:{zh:"仰卧扭转",en:"Supine twist"}, dur:90, breath:{in:4,hold:0,out:6},
+    instr:{zh:"回正，换边：双膝倒向右侧，头转向左。吸气进入侧腰，呼气腹部放松。",
+           en:"Back to center, switch: knees to the right, head left. Inhale into the side waist, exhale and soften the belly."} },
+
+  { phase:{zh:"收尾整合",en:"Rest & integrate"}, dur:50, breath:{in:4,hold:0,out:6},
+    instr:{zh:"双腿放平，手放腹部。吸 4、呼 6，让下腹慢慢落下。面部、喉咙完全放松。",
+           en:"Legs long, hands on the belly. In for 4, out for 6 — let the lower belly sink. Face and throat completely soft."},
+    scent:{zh:"薰衣草 / 乳香 — 平静、收束",en:"Lavender / frankincense — calm, settling"} },
+];
+
+const TOTAL = TIMELINE.reduce((s,x)=>s+x.dur,0);
+// phase order for index display
+const PHASES = [];
+TIMELINE.forEach(s=>{ if(!PHASES.length || PHASES[PHASES.length-1]!==s.phase.zh) PHASES.push(s.phase.zh); });
+
+/* ---------------- state ---------------- */
+let lang = "zh";
+let opts = { scent:true, sound:true, voice:false };
+let running=false, paused=false;
+let t0=0, pauseStart=0, pausedAccum=0;
+let raf=null;
+let curSegIdx=-1, lastBreathPhase="";
+
+/* ---------------- i18n ---------------- */
+function applyI18n(){
+  document.documentElement.lang = lang==="zh"?"zh-CN":"en";
+  document.querySelectorAll("[data-i]").forEach(el=>{
+    const v = I18N[lang][el.getAttribute("data-i")];
+    if(v!=null) el.innerHTML = v;
+  });
+  document.getElementById("clock-total").textContent = fmt(TOTAL);
+}
+function fmt(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+
+/* ---------------- audio (gentle tones) ---------------- */
+let actx=null;
+function ensureAudio(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(actx&&actx.state==="suspended") actx.resume(); }
+function tone(freq, dur, vol){
+  if(!opts.sound || !actx) return;
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type="sine"; o.frequency.value=freq;
+  g.gain.setValueAtTime(0, actx.currentTime);
+  g.gain.linearRampToValueAtTime(vol, actx.currentTime+0.08);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(); o.stop(actx.currentTime+dur+0.05);
+}
+const chimeIn  = ()=>tone(432,1.1,0.16);
+const chimeOut = ()=>tone(288,1.4,0.13);
+const chimeSeg = ()=>{ tone(384,0.9,0.12); setTimeout(()=>tone(512,1.0,0.10),140); };
+
+/* ---------------- speech ---------------- */
+let voiceHoldUntil=0;
+function speak(text, isCue){
+  if(!opts.voice || !("speechSynthesis" in window)) return;
+  try{
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang = lang==="zh"?"zh-CN":"en-US";
+    u.rate = lang==="zh"?0.92:0.9; u.pitch=1; u.volume=0.95;
+    if(isCue){ window.speechSynthesis.cancel(); }
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------------- engine ---------------- */
+const orb=document.getElementById("orb"), glow=document.getElementById("glow");
+const ringFg=document.getElementById("ring-fg"), RING_LEN=2*Math.PI*48;
+const bLabel=document.getElementById("breath-label"), bCount=document.getElementById("breath-count");
+const instrEl=document.getElementById("instr"), scentEl=document.getElementById("scent");
+const phaseName=document.getElementById("phase-name"), phaseIdx=document.getElementById("phase-idx");
+const progress=document.getElementById("progress"), clockEl=document.getElementById("clock-elapsed");
+
+function segAt(elapsed){
+  let acc=0;
+  for(let i=0;i<TIMELINE.length;i++){
+    if(elapsed < acc+TIMELINE[i].dur) return {i, local:elapsed-acc, start:acc};
+    acc+=TIMELINE[i].dur;
+  }
+  return {i:TIMELINE.length-1, local:TIMELINE[TIMELINE.length-1].dur, start:TOTAL-TIMELINE[TIMELINE.length-1].dur};
+}
+function ease(x){ return x<0.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
+function setOrb(scale){
+  const s = 0.55 + 0.45*scale;
+  orb.style.transform = "scale("+s.toFixed(3)+")";
+  glow.style.transform = "scale("+(0.55+0.5*scale).toFixed(3)+")";
+  glow.style.opacity = (0.4+0.4*scale).toFixed(2);
+}
+function setRing(p){ ringFg.style.strokeDashoffset = (RING_LEN*(1-p)).toFixed(1); }
+
+function enterSegment(i){
+  const seg=TIMELINE[i];
+  curSegIdx=i; lastBreathPhase="";
+  // phase label + index
+  phaseName.textContent = seg.phase[lang];
+  const pIdx = PHASES.indexOf(seg.phase.zh)+1;
+  phaseIdx.textContent = pIdx+" / "+PHASES.length;
+  // instruction
+  instrEl.style.opacity=0;
+  setTimeout(()=>{ instrEl.innerHTML=seg.instr[lang]; instrEl.style.opacity=1; },180);
+  // scent cue
+  if(opts.scent && seg.scent){
+    scentEl.innerHTML = "🌿 "+seg.scent[lang];
+    scentEl.classList.add("show");
+  }else{
+    scentEl.classList.remove("show");
+  }
+  chimeSeg();
+  // voice: read the cue; hold breath-voice for a moment so it doesn't collide
+  const cueText = (opts.scent && seg.scent ? "" : "") + seg.instr[lang];
+  speak(seg.instr[lang], true);
+  voiceHoldUntil = performance.now() + Math.min(6500, 1200 + seg.instr[lang].length*(lang==="zh"?180:60));
+}
+
+function frame(){
+  if(!running){ return; }
+  const now=performance.now();
+  const elapsed=(now - t0 - pausedAccum)/1000;
+  if(elapsed>=TOTAL){ finish(); return; }
+
+  // global progress
+  progress.style.width=(100*elapsed/TOTAL).toFixed(2)+"%";
+  clockEl.textContent=fmt(elapsed);
+
+  const {i,local}=segAt(elapsed);
+  if(i!==curSegIdx) enterSegment(i);
+  const seg=TIMELINE[i];
+
+  if(seg.breath){
+    const {in:bin,hold:bh,out:bout}=seg.breath;
+    const period=bin+bh+bout;
+    const pos=local%period;
+    let scale, label, remain, phaseKey;
+    if(pos<bin){ phaseKey="in"; scale=ease(pos/bin); label=I18N[lang].inhale; remain=bin-pos; }
+    else if(pos<bin+bh){ phaseKey="hold"; scale=1; label=I18N[lang].hold; remain=bin+bh-pos; }
+    else{ phaseKey="out"; scale=1-ease((pos-bin-bh)/bout); label=I18N[lang].exhale; remain=period-pos; }
+
+    setOrb(scale);
+    setRing(pos/period);
+    bLabel.textContent=label;
+    bCount.textContent=Math.ceil(remain-0.001);
+
+    if(phaseKey!==lastBreathPhase){
+      lastBreathPhase=phaseKey;
+      if(phaseKey==="in"){ chimeIn(); if(now>voiceHoldUntil) speak(I18N[lang].inhale,false); }
+      else if(phaseKey==="out"){ chimeOut(); if(now>voiceHoldUntil) speak(I18N[lang].exhale,false); }
+    }
+  }else{
+    // free / settling breath — slow ambient pulse, no count
+    const period=10, pos=local%period;
+    const scale = pos<5 ? ease(pos/5) : 1-ease((pos-5)/5);
+    setOrb(scale); setRing(pos/period);
+    bLabel.textContent=""; bCount.textContent="";
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+/* ---------------- controls ---------------- */
+function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+
+function start(){
+  ensureAudio();
+  if(opts.voice && "speechSynthesis" in window){ // warm up TTS on iOS
+    try{ const w=new SpeechSynthesisUtterance(" "); w.volume=0; window.speechSynthesis.speak(w);}catch(e){}
+  }
+  show("screen-practice");
+  running=true; paused=false; pausedAccum=0; curSegIdx=-1; lastBreathPhase="";
+  t0=performance.now();
+  setPlayIcon(false);
+  raf=requestAnimationFrame(frame);
+}
+function togglePause(){
+  if(!running) return;
+  paused=!paused;
+  if(paused){ pauseStart=performance.now(); cancelAnimationFrame(raf); if("speechSynthesis" in window) window.speechSynthesis.pause(); setPlayIcon(true); }
+  else{ pausedAccum+=performance.now()-pauseStart; if("speechSynthesis" in window) window.speechSynthesis.resume(); setPlayIcon(false); raf=requestAnimationFrame(frame); }
+}
+function setPlayIcon(showPlay){
+  document.getElementById("icon-play").classList.toggle("hide",!showPlay);
+  document.getElementById("icon-pause").classList.toggle("hide",showPlay);
+}
+function stopAll(){ running=false; paused=false; cancelAnimationFrame(raf); if("speechSynthesis" in window) window.speechSynthesis.cancel(); }
+function finish(){ stopAll(); show("screen-done"); setOrb(0.6); }
+function exit(){ stopAll(); show("screen-welcome"); }
+
+/* ---------------- wiring ---------------- */
+function bindToggle(optId, key){
+  const row=document.getElementById(optId), tg=row.querySelector(".toggle");
+  const flip=()=>{ opts[key]=!opts[key]; tg.classList.toggle("on",opts[key]); tg.setAttribute("aria-checked",opts[key]);
+    if(key==="voice"&&opts.voice) ensureAudio(); };
+  row.addEventListener("click",flip);
+  tg.addEventListener("keydown",e=>{ if(e.key===" "||e.key==="Enter"){e.preventDefault(); flip();} });
+}
+bindToggle("opt-scent","scent");
+bindToggle("opt-sound","sound");
+bindToggle("opt-voice","voice");
+
+document.getElementById("lang-zh").addEventListener("click",()=>setLang("zh"));
+document.getElementById("lang-en").addEventListener("click",()=>setLang("en"));
+function setLang(l){
+  lang=l;
+  document.getElementById("lang-zh").classList.toggle("on",l==="zh");
+  document.getElementById("lang-en").classList.toggle("on",l==="en");
+  applyI18n();
+  if(running && curSegIdx>=0){
+    const seg=TIMELINE[curSegIdx];
+    phaseName.textContent=seg.phase[lang];
+    instrEl.innerHTML=seg.instr[lang];
+    if(opts.scent && seg.scent) scentEl.innerHTML="🌿 "+seg.scent[lang];
+  }
+}
+
+document.getElementById("btn-start").addEventListener("click",start);
+document.getElementById("ctrl-play").addEventListener("click",togglePause);
+document.getElementById("ctrl-exit").addEventListener("click",exit);
+document.getElementById("btn-again").addEventListener("click",start);
+document.getElementById("btn-home").addEventListener("click",()=>show("screen-welcome"));
+const ctrlSound=document.getElementById("ctrl-sound");
+ctrlSound.addEventListener("click",()=>{ opts.sound=!opts.sound; ctrlSound.classList.toggle("on",opts.sound); ensureAudio(); });
+
+document.addEventListener("keydown",e=>{
+  if(document.getElementById("screen-practice").classList.contains("active")){
+    if(e.key===" "){ e.preventDefault(); togglePause(); }
+    if(e.key==="Escape"){ exit(); }
+  }
+});
+
+applyI18n();
+setRing(0);
+setOrb(0.6);
+</script>
+</body>
+</html>
